@@ -52,6 +52,46 @@ RUN cd /root/ros2_ws && rosdep init && rosdep update && rosdep install --from-pa
 
 RUN . /opt/ros/humble/setup.sh && cd /root/ros2_ws && colcon build --symlink-install --cmake-args=-DCMAKE_BUILD_TYPE=Release --parallel-workers $(nproc)
 
-
+# Installing pytorch
 COPY /assets /tmp
+ENV TORCH_INSTALL=/tmp/torch-2.3.0-cp310-cp310-linux_aarch64.whl
+ENV TORCHVISION_INSTALL=/tmp/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl
 
+RUN python3 -m pip install --upgrade pip &&  python3 -m pip install numpy==1.26.1 &&  python3 -m pip install --no-cache $TORCH_INSTALL
+
+RUN python3 -m pip install --no-cache $TORCHVISION_INSTALL
+
+RUN rm /tmp/torch*
+
+
+# Install ros-drivers for sensors and stuff
+#Hokuyo!
+
+RUN cd /root/ros2_ws/src && git clone --recursive https://github.com/Hokuyo-aut/urg_node2.git && rosdep update && rosdep install -i --from-paths urg_node2 
+
+RUN cd /root/ros2_ws && . /opt/ros/humble/setup.sh && colcon build --symlink-install
+
+
+# VESC Setup
+RUN cd /root/ros2_ws/src && git clone https://github.com/ros-drivers/transport_drivers.git 
+RUN cd /root/ros2_ws && rosdep install --from-paths src --ignore-src -r -y && . /opt/ros/humble/setup.sh && colcon build
+
+
+RUN apt update && apt install -y ros-humble-ackermann-msgs ros-humble-ros-testing
+
+
+RUN cd /root/ros2_ws/src && git clone https://github.com/Sebastian-Garcia/racecarHardware4Orin.git
+RUN cd /root/ros2_ws && . /opt/ros/humble/setup.sh && colcon build --symlink-install
+
+
+# Install other useful tools, also add things to bashrc
+RUN apt update && apt install -y vim
+
+# Customize terminal appearance with custom display name
+RUN echo 'export PS1="\[\e[38;5;214m\]🏎️ \[\e[38;5;39m\]racer\[\e[38;5;11m\]@\[\e[38;5;39m\]mit\[\e[38;5;11m\]:\[\e[38;5;83m\]\w\[\e[38;5;11m\]\\$ \[\e[0m\]"' >> /root/.bashrc && \
+   echo 'alias ls="ls --color=auto"' >> /root/.bashrc && \
+   echo 'export TERM=xterm-256color' >> /root/.bashrc
+
+
+USER root
+WORKDIR /root
