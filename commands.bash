@@ -1,0 +1,1 @@
+xhost +local:docker # necessary for DISPLAY to work
