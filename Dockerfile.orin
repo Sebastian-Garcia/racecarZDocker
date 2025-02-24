@@ -95,3 +95,26 @@ RUN echo 'export PS1="\[\e[38;5;214m\]🏎️ \[\e[38;5;39m\]racer\[\e[38;5;11m\
 
 USER root
 WORKDIR /root
+
+sudo apt-get update
+sudo apt-get install dialog -y
+
+sudo apt-get install lsof
+sudo apt install tigervnc-standalone-server tigervnc-common -y
+mkdir -p ~/.vnc && echo "SecurityTypes=None" > ~/.vnc/config
+sudo apt-get install lxde -y
+
+git clone https://github.com/novnc/noVNC.git ~/noVNC
+cd ~/noVNC && git checkout v1.4.0
+
+echo 'source /opt/ros/humble/setup.bash' >> /root/.bashrc
+echo 'source /root/ros2_ws/install/setup.bash' >> /root/.bashrc
+echo 'source /root/racecar_ws/install/setup.bash' >> /root/.bashrc
+
+echo 'export SCANNER_TYPE=hokuyo' >> /root/.bashrc
+
+echo 'alias teleop="ros2 launch racecar teleop.launch.xml"' >> ~/.bashrc
+
+chmod +x /root/ros2_ws/install/ackermann_cmd_mux/lib/ackermann_cmd_mux/throttle_interpolator.py
+
+cd ~
