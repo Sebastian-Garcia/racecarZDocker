@@ -53,9 +53,9 @@ RUN cd /root/ros2_ws && rosdep init && rosdep update && rosdep install --from-pa
 RUN . /opt/ros/humble/setup.sh && cd /root/ros2_ws && colcon build --symlink-install --cmake-args=-DCMAKE_BUILD_TYPE=Release --parallel-workers $(nproc)
 
 # Installing pytorch
-COPY /assets /tmp
-ENV TORCH_INSTALL=/tmp/torch-2.3.0-cp310-cp310-linux_aarch64.whl
-ENV TORCHVISION_INSTALL=/tmp/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl
+# COPY /assets /tmp
+# ENV TORCH_INSTALL=/tmp/torch-2.3.0-cp310-cp310-linux_aarch64.whl
+# ENV TORCHVISION_INSTALL=/tmp/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl
 
 RUN python3 -m pip install --upgrade pip &&  python3 -m pip install numpy==1.26.1 &&  python3 -m pip install --no-cache $TORCH_INSTALL
 
