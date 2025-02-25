@@ -1,7 +1,7 @@
-FROM nvcr.io/nvidia/l4t-jetpack:r36.3.0
+FROM ubuntu:jammy
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG ZED_SDK_VERSION="3.8"
+# ARG ZED_SDK_VERSION="3.8"
 
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
@@ -24,11 +24,11 @@ RUN apt-get update && apt-get install -y locales \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN apt update && apt install -y zstd x11-utils x11-apps apt-utils
+# RUN apt update && apt install -y zstd x11-utils x11-apps apt-utils
 # For ZED Setup
-RUN wget https://download.stereolabs.com/zedsdk/4.2/l4t36.3/jetsons
-RUN chmod +x jetsons 
-RUN ./jetsons  -- silent
+# RUN wget https://download.stereolabs.com/zedsdk/4.2/l4t36.3/jetsons
+# RUN chmod +x jetsons 
+# RUN ./jetsons  -- silent
 
 ENV XDG_RUNTIME_DIR=/tmp/runtime-root
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/aarch64-linux-gnu/tegra
@@ -46,23 +46,18 @@ RUN . /opt/ros/humble/setup.sh
 # zed ros2 wrapper
 RUN apt install -y git
 
-RUN mkdir -p /root/ros2_ws/src && cd /root/ros2_ws/src && git clone https://github.com/stereolabs/zed-ros2-wrapper.git
+RUN mkdir -p /root/ros2_ws/src && cd /root/ros2_ws/src
 
 RUN cd /root/ros2_ws && rosdep init && rosdep update && rosdep install --from-paths src --ignore-src -r -y
 
 RUN . /opt/ros/humble/setup.sh && cd /root/ros2_ws && colcon build --symlink-install --cmake-args=-DCMAKE_BUILD_TYPE=Release --parallel-workers $(nproc)
 
 # Installing pytorch
-COPY /assets /tmp
-ENV TORCH_INSTALL=/tmp/torch-2.3.0-cp310-cp310-linux_aarch64.whl
-ENV TORCHVISION_INSTALL=/tmp/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl
+# COPY /assets /tmp
+# ENV TORCH_INSTALL=/tmp/torch-2.3.0-cp310-cp310-linux_aarch64.whl
+# ENV TORCHVISION_INSTALL=/tmp/torchvision-0.18.0a0+6043bc2-cp310-cp310-linux_aarch64.whl
 
-RUN python3 -m pip install --upgrade pip &&  python3 -m pip install numpy==1.26.1 &&  python3 -m pip install --no-cache $TORCH_INSTALL
-
-RUN python3 -m pip install --no-cache $TORCHVISION_INSTALL
-
-RUN rm /tmp/torch*
-
+RUN python3 -m pip install --upgrade pip &&  python3 -m pip install numpy==1.26.1
 
 # Install ros-drivers for sensors and stuff
 #Hokuyo!
@@ -79,10 +74,8 @@ RUN cd /root/ros2_ws && rosdep install --from-paths src --ignore-src -r -y && . 
 
 RUN apt update && apt install -y ros-humble-ackermann-msgs ros-humble-ros-testing
 
-ARG REPO_BUST=""
-RUN cd /root/ros2_ws/src \
- && echo "Forcing fresh clone if REPO_BUST changes: $REPO_BUST" \
- && git clone https://github.com/Sebastian-Garcia/racecarHardware4Orin.git
+
+RUN cd /root/ros2_ws/src && git clone https://github.com/Sebastian-Garcia/racecarHardware4Orin.git
 RUN cd /root/ros2_ws && . /opt/ros/humble/setup.sh && colcon build --symlink-install
 
 
